@@ -4,11 +4,20 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from google.adk.agents import Agent
-from google.adk.tools.mcp_tool.mcp_session_manager import StdioConnectionParams
+from google.adk.tools.mcp_tool.mcp_session_manager import (
+    StdioConnectionParams,
+    StreamableHTTPConnectionParams,
+)
 from google.adk.tools.mcp_tool.mcp_toolset import McpToolset
 from mcp import StdioServerParameters
 
 MODEL_NAME = os.getenv("MODEL_NAME", "ollama_chat/qwen2.5-coder:7b")
+
+# "http" connects to product_mcp_server as a separate networked service
+# (Docker Compose); "stdio" (default) launches it as a local subprocess
+# using its own venv, for running services outside Docker.
+MCP_TRANSPORT = os.getenv("MCP_TRANSPORT", "stdio")
+MCP_HTTP_URL = os.getenv("MCP_HTTP_URL", "http://product_mcp_server:8100/mcp")
 
 _MCP_SERVER_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "product_mcp_server")
@@ -47,8 +56,16 @@ quantities, or product identifiers under any circumstance.
 """
 
 
-def build_agent() -> Agent:
-    toolset = McpToolset(
+def _build_toolset() -> McpToolset:
+    if MCP_TRANSPORT == "http":
+        return McpToolset(
+            connection_params=StreamableHTTPConnectionParams(
+                url=MCP_HTTP_URL,
+                timeout=10.0,
+            )
+        )
+
+    return McpToolset(
         connection_params=StdioConnectionParams(
             server_params=StdioServerParameters(
                 command=_MCP_SERVER_PYTHON,
@@ -59,7 +76,8 @@ def build_agent() -> Agent:
                         "PRODUCT_API_BASE_URL", "http://localhost:5001"
                     ),
                     "STOCK_DATABASE_URL": os.getenv(
-                        "STOCK_DATABASE_URL", "sqlite:///../backoffice/backoffice.db"
+                        "STOCK_DATABASE_URL",
+                        "postgresql+psycopg2://hbntory:hbntory@localhost:5432/hbntory",
                     ),
                     "PATH": os.environ.get("PATH", ""),
                 },
@@ -67,6 +85,10 @@ def build_agent() -> Agent:
             timeout=10.0,
         )
     )
+
+
+def build_agent() -> Agent:
+    toolset = _build_toolset()
 
     return Agent(
         name="inventory_assistant",

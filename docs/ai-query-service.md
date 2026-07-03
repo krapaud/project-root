@@ -54,9 +54,24 @@ caught during testing.
   tool-call formatting incompatibility between this model and
   LiteLLM/Ollama's function-calling path. Not investigated further since
   `7b` already worked adequately.
-- `qwen2.5-coder:7b` — chosen as the default. Reliable for the three
-  single-lookup question types (product details, branch availability,
-  branch contents). See the known limitation below for the fourth type.
+- `qwen2.5-coder:7b` — chosen as the default. Usually reliable for the
+  three single-lookup question types (product details, branch
+  availability, branch contents), but not perfectly: see the note on
+  multi-branch results below.
+
+### Known limitation: incomplete multi-branch results
+
+Even for a single-product "which branch has stock" question, when a
+product exists in more than one branch the model occasionally reports
+only one branch instead of all of them — observed both with the stdio
+transport (local dev) and the HTTP transport (Docker Compose), so it is
+not transport-related. Repeating an identical question against unchanged
+data can yield a complete, correct answer on one call and an incomplete
+one (missing a branch) on the next. The underlying `get_stock_for_product`
+tool itself was directly verified (via SQL against the Postgres container)
+to consistently return all branches correctly — the loss happens when the
+model synthesizes the tool result into text, not in the data or the MCP
+server.
 
 ### Known limitation: multi-product shopping-list questions
 

@@ -24,6 +24,8 @@ public natural-language Client Web Interface.
   agent/MCP wiring, manual test evidence.
 - [Test Evidence](docs/test-evidence.md) — automated test results, critical
   scenario coverage, full-system integration run.
+- [Docker](docs/docker.md) — running the full stack with Docker Compose,
+  why PostgreSQL and an HTTP MCP transport were needed for containers.
 
 ## Client Web Interface — Example Questions
 
@@ -40,10 +42,31 @@ system:
 Anything else, or a question about an unknown product/branch, gets an
 explicit "not available" answer rather than an invented one.
 
-## Setup & Running Each Service
+## Quick Start (Docker Compose)
 
-Each service has its own virtualenv and `.env.example`. Run
-`cp .env.example .env` in each before starting it.
+The fastest way to run the whole system:
+
+```bash
+ollama pull qwen2.5-coder:7b   # if not already pulled
+ollama serve                    # if not already running
+# start the Product API (see below) so it's reachable on :5001
+docker compose up -d --build
+```
+
+- Backoffice: `http://localhost:8010/login`
+- Client Web Interface: `http://localhost:5500/index.html`
+- AI Query Service: `POST http://localhost:9000/query`
+
+See [docs/docker.md](docs/docker.md) for full details: which services are
+containerized, why PostgreSQL replaced SQLite and why the MCP server runs
+over HTTP instead of stdio inside Docker, and how to resolve host port
+conflicts.
+
+## Setup & Running Each Service Manually
+
+Alternatively, each service can be run directly with its own virtualenv
+and `.env.example` (useful for development/debugging individual services).
+Run `cp .env.example .env` in each before starting it.
 
 ### 1. External Product API
 
@@ -140,14 +163,16 @@ sequence.
 - No automated tests for the AI Query Service or MCP server — covered by
   documented manual runs instead, since they depend on a live LLM/Ollama
   and an external Product API.
-- Services are not yet containerized (`docker-compose.yml` deferred per
-  `docs/mvp.md`); each service runs from its own virtualenv.
 - Testing used a lightweight stub Product API, not the real Docker
   container (not available in this environment) — see `docs/test-evidence.md`.
+- The Product API and Ollama are not containerized — both must already be
+  running on the host when using `docker compose up` (see `docs/docker.md`).
 
 ## Status
 
-Tasks 0–7 implemented and verified: architecture, database, backoffice
-auth/authorization, backoffice stock and user management, Product MCP
-Server, AI Query Service, Client Web Interface, automated tests, and a
-full-system integration run. Task 8 (final presentation) remains.
+Tasks 0–7 implemented and verified, including Docker Compose for
+`backoffice`, `product_mcp_server`, `ai_service`, `client_web`, and
+PostgreSQL: architecture, database, backoffice auth/authorization,
+backoffice stock and user management, Product MCP Server, AI Query
+Service, Client Web Interface, automated tests, a full-system integration
+run, and containerization. Task 8 (final presentation) remains.

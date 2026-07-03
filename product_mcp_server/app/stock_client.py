@@ -2,7 +2,9 @@ import os
 
 from sqlalchemy import create_engine, text
 
-STOCK_DATABASE_URL = os.getenv("STOCK_DATABASE_URL", "sqlite:///../backoffice/backoffice.db")
+STOCK_DATABASE_URL = os.getenv(
+    "STOCK_DATABASE_URL", "postgresql+psycopg2://hbntory:hbntory@localhost:5432/hbntory"
+)
 
 _connect_args = {"check_same_thread": False} if STOCK_DATABASE_URL.startswith("sqlite") else {}
 _engine = create_engine(STOCK_DATABASE_URL, connect_args=_connect_args)

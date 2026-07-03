@@ -1,0 +1,71 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: hbntory
+      POSTGRES_PASSWORD: hbntory
+      POSTGRES_DB: hbntory
+    volumes:
+      - hbntory_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hbntory"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backoffice:
+    build: ./backoffice
+    ports:
+      - "8010:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://hbntory:hbntory@db:5432/hbntory
+      PRODUCT_API_BASE_URL: ${PRODUCT_API_BASE_URL:-http://host.docker.internal:5001}
+      SESSION_SECRET_KEY: ${SESSION_SECRET_KEY:-dev-secret-change-me}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-ChangeMe123!}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  product_mcp_server:
+    build: ./product_mcp_server
+    ports:
+      - "8100:8100"
+    environment:
+      PRODUCT_API_BASE_URL: ${PRODUCT_API_BASE_URL:-http://host.docker.internal:5001}
+      STOCK_DATABASE_URL: postgresql+psycopg2://hbntory:hbntory@db:5432/hbntory
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  ai_service:
+    build: ./ai_service
+    ports:
+      - "9000:9000"
+    environment:
+      OLLAMA_API_BASE: ${OLLAMA_API_BASE:-http://host.docker.internal:11434}
+      MODEL_NAME: ${MODEL_NAME:-ollama_chat/qwen2.5-coder:7b}
+      PRODUCT_API_BASE_URL: ${PRODUCT_API_BASE_URL:-http://host.docker.internal:5001}
+      STOCK_DATABASE_URL: postgresql+psycopg2://hbntory:hbntory@db:5432/hbntory
+      MCP_TRANSPORT: http
+      MCP_HTTP_URL: http://product_mcp_server:8100/mcp
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+      product_mcp_server:
+        condition: service_started
+
+  client_web:
+    build: ./client_web
+    ports:
+      - "5500:80"
+    depends_on:
+      - ai_service
+
+volumes:
+  hbntory_db_data:

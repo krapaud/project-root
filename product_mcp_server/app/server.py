@@ -1,3 +1,5 @@
+import os
+
 from fastmcp import FastMCP
 
 from app.product_api_client import ProductAPIError, ProductNotFoundError
@@ -57,4 +59,8 @@ def get_stock_for_branch(branch_id: int) -> dict:
 
 
 if __name__ == "__main__":
-    mcp.run()
+    transport = os.getenv("MCP_TRANSPORT", "stdio")
+    if transport == "http":
+        mcp.run(transport="http", host="0.0.0.0", port=int(os.getenv("MCP_HTTP_PORT", "8100")))
+    else:
+        mcp.run()
