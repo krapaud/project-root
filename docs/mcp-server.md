@@ -5,19 +5,26 @@
 `product_mcp_server/app/server.py` is a [FastMCP](https://gofastmcp.com)
 server bridging the AI agent to two data sources:
 
-- The external **Product API** (read-only, Docker container) — product
-  listing and details.
+- The external **Product API**
+  ([hbtn-edu/hbntory-products-api](https://github.com/hbtn-edu/hbntory-products-api),
+  read-only, provided as a Docker container, default port `5001`) —
+  product listing and details.
 - The **Backoffice database** (read-only connection) — stock quantities,
   per the architectural decision in `communication-decisions.md` §4 to
   extend this same MCP server rather than adopt a generic database MCP
   tool.
 
+`product_id` throughout HBntory (stock rows, MCP tool arguments) is the
+Product API's **SKU** (e.g. `HB-LAP-1001`), not its numeric `id` — chosen
+for readability and because it's the identifier the `{id_or_sku}` path
+parameter on `GET /api/v1/products/{id_or_sku}` accepts directly.
+
 ## Tools Exposed
 
 | Tool | Input | Output | Notes |
 |---|---|---|---|
-| `list_products` | none | `list[dict]` of products, or `[{"error": ...}]` | Proxies `GET /products` on the Product API. |
-| `get_product_details` | `product_id: str` | product `dict`, or `{"error": ...}` | Proxies `GET /products/{id}`. Distinguishes "not found" from "API unreachable" in the error message. |
+| `list_products` | none | `list[dict]` of products, or `[{"error": ...}]` | Proxies `GET /api/v1/products` on the Product API. |
+| `get_product_details` | `product_id: str` (SKU) | product `dict`, or `{"error": ...}` | Proxies `GET /api/v1/products/{sku}`. Distinguishes "not found" (API's `{"error": "not_found", ...}` body on a 404) from "API unreachable" in the error message. |
 | `get_stock_for_product` | `product_id: str` | `{"product_id", "branches": [{"branch_id", "branch_name", "quantity"}]}` | Read-only SQL join against `stock`/`branches`. Empty list (not an error) if the product has no stock anywhere. |
 | `get_stock_for_branch` | `branch_id: int` | `{"branch_id", "products": [{"product_id", "quantity"}]}` | Read-only SQL against `stock`. Empty list if the branch has no stock rows. |
 
@@ -51,25 +58,25 @@ for "no results":
 
 `product_mcp_server/test_client.py` connects an in-process `fastmcp.Client`
 to the server and exercises all four tools, including the two "expected
-failure" paths (unknown product id, branch with no stock). Verified runs:
+failure" paths (unknown product SKU, branch with no stock). Verified
+against a stub matching the real API's contract (`GET /api/v1/products`,
+`GET /api/v1/products/{id_or_sku}`, `{"error": "not_found", "message":
+"..."}` on 404):
 
-```
+```text
 Available tools: ['list_products', 'get_product_details', 'get_stock_for_product', 'get_stock_for_branch']
 
---- list_products() ---
-[{'id': 'prod-001', 'name': 'Widget', 'price': 9.99}]
+--- get_product_details('HB-LAP-1001') [valid SKU] ---
+{'id': 1, 'sku': 'HB-LAP-1001', 'name': 'Holberton Student Laptop 14', 'description': '...', 'category': 'Laptops', 'brand': 'Holberton', 'supplier_id': 'SUP-HBT-001', 'supplier_name': 'Holberton Tools Co.', 'unit_price': 799.0, 'currency': 'USD', 'discontinued': False, 'weight_kg': 1.35, 'tags': ['student', 'portable', 'linux-ready'], 'updated_at': '2026-05-22T12:00:00Z'}
 
---- get_product_details('prod-001') [valid] ---
-{'id': 'prod-001', 'name': 'Widget', 'price': 9.99}
+--- get_product_details('BOGUS') [invalid SKU] ---
+{'error': "No product found with id 'BOGUS'"}
 
---- get_product_details('does-not-exist') [invalid id] ---
-{'error': "No product found with id 'does-not-exist'"}
-
---- get_stock_for_product('prod-001') ---
-{'product_id': 'prod-001', 'branches': [{'branch_id': 1, 'branch_name': 'Downtown', 'quantity': 25}, {'branch_id': 2, 'branch_name': 'Airport', 'quantity': 5}]}
+--- get_stock_for_product('HB-LAP-1001') ---
+{'product_id': 'HB-LAP-1001', 'branches': [{'branch_id': 1, 'branch_name': 'Downtown', 'quantity': 30}, {'branch_id': 2, 'branch_name': 'Airport', 'quantity': 5}]}
 
 --- get_stock_for_branch(1) ---
-{'branch_id': 1, 'products': [{'product_id': 'prod-001', 'quantity': 25}, {'product_id': 'prod-002', 'quantity': 10}]}
+{'branch_id': 1, 'products': [{'product_id': 'HB-LAP-1001', 'quantity': 30}, {'product_id': 'HB-KEY-2002', 'quantity': 10}]}
 
 --- get_stock_for_branch(999) [no stock] ---
 {'branch_id': 999, 'products': [], 'note': 'No stock recorded for this branch.'}

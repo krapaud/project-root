@@ -52,6 +52,16 @@ across all four supported question types.
 
 ## Manually Verified Behavior
 
+**Note**: the runs below predate confirmation of the real Product API's
+contract ([hbtn-edu/hbntory-products-api](https://github.com/hbtn-edu/hbntory-products-api))
+and use placeholder ids (`prod-001` etc.) from an earlier, simplified stub.
+The same question types were re-verified after switching to the real
+contract (`GET /api/v1/products/{id_or_sku}`, SKU-based ids like
+`HB-LAP-1001`) — see `docs/test-evidence.md`'s integration run and the
+"Product Data" section below for that confirmation. Both runs exercise the
+identical agent/tool code path; only the underlying product ids/schema
+differ.
+
 With a stub Product API (`prod-001`/`prod-002`/`prod-003`) and the seeded
 Backoffice DB (branches Downtown/Airport):
 
@@ -62,6 +72,20 @@ Backoffice DB (branches Downtown/Airport):
 | "What products can I find in branch 1?" | Correctly listed prod-001 (25) and prod-002 (10). |
 | "Give me details about product does-not-exist." | Explicit "no product with that identifier" — no invention. |
 | "Buy 10 of prod-001 and 5 of prod-002 — which branch(es)?" | Correctly identified Airport as the only branch holding both; one intermediate tool call had invalid arguments (passed a list instead of a string) and was retried by the agent before answering correctly. |
+
+### Re-verified against the real API's contract
+
+```text
+Q: Give me details about product HB-LAP-1001.
+A: Holberton Student Laptop 14 — a training catalog item for HBntory
+   integration, categorized under Laptops, supplied by Holberton Tools Co.,
+   priced at USD 799, weighing 1.35 kg, tagged student/portable/linux-ready.
+```
+
+Confirms the agent correctly consumes the real API's richer product schema
+(`sku`, `unit_price`, `currency`, `tags`, etc.) through the same
+`get_product_details` tool, with no code changes beyond the client/tool
+pointing at the real path and field names.
 | Empty question via `POST /query` | Short-circuited before reaching the agent: "Please ask a question about products or stock." |
 
 ## Endpoint

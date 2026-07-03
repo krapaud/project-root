@@ -18,11 +18,11 @@ ADMIN_PASSWORD = os.getenv("SEED_ADMIN_PASSWORD", "ChangeMe123!")
 
 BRANCHES = ["Downtown", "Airport"]
 
+# product ids below are Product API SKUs (see docs/mcp-server.md)
 SAMPLE_STOCK = [
-    ("Downtown", "prod-001", 25),
-    ("Downtown", "prod-002", 10),
-    ("Airport", "prod-001", 5),
-    ("Airport", "prod-003", 40),
+    ("Downtown", "HB-LAP-1001", 25),
+    ("Downtown", "HB-KEY-2002", 10),
+    ("Airport", "HB-LAP-1001", 5),
 ]
 
 

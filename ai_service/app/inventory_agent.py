@@ -49,7 +49,7 @@ def build_agent() -> Agent:
                 cwd=_MCP_SERVER_DIR,
                 env={
                     "PRODUCT_API_BASE_URL": os.getenv(
-                        "PRODUCT_API_BASE_URL", "http://localhost:8080"
+                        "PRODUCT_API_BASE_URL", "http://localhost:5001"
                     ),
                     "STOCK_DATABASE_URL": os.getenv(
                         "STOCK_DATABASE_URL", "sqlite:///../backoffice/backoffice.db"

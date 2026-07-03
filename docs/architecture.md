@@ -22,14 +22,16 @@ can be developed, run, and reasoned about on its own.
 | `product_mcp_server/` | MCP server wrapping the external Product API. Exposes `list_products` / `get_product_details` tools (and stock-query tools, see §5). No DB access of its own to product data — it's a pass-through with error handling. | FastMCP |
 | `ai_service/` | Independent backend. Hosts the AI agent(s). Receives natural-language questions from the Client Web Interface, calls MCP tools, returns grounded answers. Never talks to the Backoffice DB directly. | FastAPI + Google ADK + LiteLLM + Ollama |
 | `client_web/` | Static public page (chat/search-box). No auth. Talks only to `ai_service`. | Plain HTML/CSS/JS |
-| Product API | Provided externally as a Docker container. Read-only: list products, get product details. Not implemented by us. | Given |
+| Product API | Provided externally as a Docker container ([hbtn-edu/hbntory-products-api](https://github.com/hbtn-edu/hbntory-products-api)). Read-only: list/search products, get product details by id or SKU, categories, suppliers. Not implemented by us. | Given |
 | Backoffice DB | Relational database. Stores users, branches, stock rows keyed by branch + external product id. Never stores product name/description/price/image/metadata. | PostgreSQL (or SQLite for dev) |
 
 ## 3. Data Ownership — What Lives Where
 
 - **Backoffice DB (local, ours):** users (with role, branch FK, password hash,
-  active flag), branches, stock rows (`branch_id`, `product_id` [external
-  id, opaque string/int], `quantity`).
+  active flag), branches, stock rows (`branch_id`, `product_id` [the
+  Product API's SKU, e.g. `HB-LAP-1001` — chosen over its numeric `id`
+  because it's what the AI agent and Backoffice UI reason about, and it's
+  already the string type `stock.product_id` uses], `quantity`).
 - **Product API (external, source of truth for product data):** product
   name, description, price, image, any product metadata. Never duplicated
   into our DB.

@@ -50,7 +50,7 @@ Rules enforced by schema + app logic:
 |---|---|---|
 | `id` | Integer | PK |
 | `branch_id` | Integer | FK → `branches.id`, not null |
-| `product_id` | String | not null (external Product API id — opaque) |
+| `product_id` | String | not null (Product API SKU, e.g. `HB-LAP-1001` — opaque to this schema) |
 | `quantity` | Integer | not null, default 0, `CHECK (quantity >= 0)` |
 | `created_at` | DateTime | not null, default now |
 | `updated_at` | DateTime | not null, default now, on update now |
