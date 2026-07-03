@@ -6,7 +6,7 @@
 services as containers, plus a PostgreSQL database:
 
 | Service | Container port | Host port | Notes |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `db` | 5432 | (none published) | PostgreSQL 16, only reachable by other containers on the compose network |
 | `backoffice` | 8000 | **8010** | Port shifted to avoid clashing with other projects' `8000` on the host |
 | `product_mcp_server` | 8100 | 8100 | Runs in HTTP transport mode (`MCP_TRANSPORT=http`) instead of stdio |
