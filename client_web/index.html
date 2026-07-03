@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>HBntory — Product & Stock Assistant</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.4rem; }
+    form { display: flex; gap: 0.5rem; margin: 1rem 0; }
+    input[type="text"] { flex: 1; padding: 0.5rem; font-size: 1rem; }
+    button { padding: 0.5rem 1rem; font-size: 1rem; }
+    #response { border: 1px solid #ccc; border-radius: 4px; padding: 1rem; min-height: 4rem; white-space: pre-wrap; }
+    #response.loading { color: #666; font-style: italic; }
+    #response.error { color: #b00020; border-color: #b00020; }
+    .examples { font-size: 0.9rem; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>HBntory — Ask about products and stock</h1>
+  <p class="examples">
+    Examples: "Which branch has stock of prod-001?" · "What products can I
+    find in branch 1?" · "Give me details about product prod-002." ·
+    "If I want to buy 3 units of prod-001 and 2 of prod-002, which branch
+    should I visit?"
+  </p>
+
+  <form id="query-form">
+    <input type="text" id="question" placeholder="Ask a question..." required>
+    <button type="submit">Ask</button>
+  </form>
+
+  <div id="response">Ask a question to get started.</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
