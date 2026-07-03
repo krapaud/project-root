@@ -129,9 +129,14 @@ sequence.
 
 ## Known Limitations
 
-- Local model tool-use reliability varies: `llama3.2:1b` produced malformed
-  tool calls; `qwen2.5-coder:7b` is the validated default (see
-  `docs/ai-query-service.md`).
+- Local model tool-use reliability varies: `llama3.2:1b` and
+  `qwen2.5-coder:14b` both failed in different ways; `qwen2.5-coder:7b` is
+  the validated default (see `docs/ai-query-service.md`).
+- **Shopping-list questions (multiple products) are unreliable** with the
+  current local model — it sometimes leaks raw tool JSON or fabricates a
+  quantity when chaining more than one tool call in a single turn.
+  Single-product/single-branch questions are reliable. See
+  `docs/ai-query-service.md`'s "Known limitation" section.
 - No automated tests for the AI Query Service or MCP server — covered by
   documented manual runs instead, since they depend on a live LLM/Ollama
   and an external Product API.

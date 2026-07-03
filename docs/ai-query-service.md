@@ -42,13 +42,54 @@ caught during testing.
 
 ## Model
 
-**`qwen2.5-coder:7b`** (via Ollama), not `llama3.2:1b`. Both were tried;
-`llama3.2:1b` produced malformed/hallucinated output when asked to use
-tools (e.g. echoing an internal request-format artifact instead of calling
-`get_product_details`), consistent with the tool-use limitations already
-noted in `ai-agents-intro`/`capstone-agentic` for very small models.
-`qwen2.5-coder:7b` reliably called tools and produced grounded answers
-across all four supported question types.
+**`qwen2.5-coder:7b`** (via Ollama). Three models were tried:
+
+- `llama3.2:1b` — produced malformed/hallucinated output when asked to use
+  tools (e.g. echoing an internal request-format artifact instead of
+  calling `get_product_details`), consistent with the tool-use limitations
+  already noted in `ai-agents-intro`/`capstone-agentic` for very small
+  models.
+- `qwen2.5-coder:14b` — reliably failed to produce any usable answer at
+  all (returned empty/malformed JSON, e.g. `` ```json\n\n``` ``), likely a
+  tool-call formatting incompatibility between this model and
+  LiteLLM/Ollama's function-calling path. Not investigated further since
+  `7b` already worked adequately.
+- `qwen2.5-coder:7b` — chosen as the default. Reliable for the three
+  single-lookup question types (product details, branch availability,
+  branch contents). See the known limitation below for the fourth type.
+
+### Known limitation: multi-product shopping-list questions
+
+Question type 4 (shopping-list recommendation across multiple products)
+requires the agent to call `get_stock_for_product` more than once in a
+single turn and reason over the combined results. With `qwen2.5-coder:7b`
+this is **not reliable** — repeating the identical question yields
+different outcomes across runs:
+
+- Sometimes correct and grounded.
+- Sometimes the raw MCP `<tool_response>` JSON leaks directly into the
+  answer instead of being synthesized into text.
+- Sometimes the quantity attributed to a branch is fabricated/inconsistent
+  with what the tool actually returned (verified by calling the same tool
+  directly and comparing).
+
+Each individual tool call was independently verified to return correct,
+stable data (see "Manually Verified Behavior" below and
+`docs/mcp-server.md`) — the instability is in the model's handling of
+multiple sequential tool calls within one turn, not in the MCP server or
+the stock data. The system instruction
+(`app/inventory_agent.py::INSTRUCTION`) was tightened to spell out an
+explicit step-by-step procedure for this question type, which helped but
+did not fully resolve the inconsistency. Question types 1–3 (single tool
+call each) were not observed to have this problem.
+
+**If this needs to be fixed for a demo**: the most reliable option would
+be to special-case shopping-list questions with deterministic Python logic
+(call the stock tools directly, compare against requested quantities, and
+only use the LLM to phrase the final sentence) rather than trusting the
+model to orchestrate multiple tool calls unsupervised. This was not
+implemented, to keep the agent's logic uniform across all four question
+types, and because it wasn't required for this project's scope.
 
 ## Manually Verified Behavior
 
