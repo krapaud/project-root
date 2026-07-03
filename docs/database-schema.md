@@ -12,7 +12,7 @@ the Product API (see `architecture.md`).
 ### `branches`
 
 | Column | Type | Constraints |
-|---|---|---|
+| --- | --- | --- |
 | `id` | Integer | PK |
 | `name` | String | unique, not null |
 | `created_at` | DateTime | not null, default now |
@@ -20,7 +20,7 @@ the Product API (see `architecture.md`).
 ### `users`
 
 | Column | Type | Constraints |
-|---|---|---|
+| --- | --- | --- |
 | `id` | Integer | PK |
 | `username` | String | unique, not null |
 | `password_hash` | String | not null |
@@ -47,7 +47,7 @@ Rules enforced by schema + app logic:
 ### `stock`
 
 | Column | Type | Constraints |
-|---|---|---|
+| --- | --- | --- |
 | `id` | Integer | PK |
 | `branch_id` | Integer | FK → `branches.id`, not null |
 | `product_id` | String | not null (Product API SKU, e.g. `HB-LAP-1001` — opaque to this schema) |

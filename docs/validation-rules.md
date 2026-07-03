@@ -18,7 +18,7 @@ without duplicating checks per route.
 ## Rules and enforcement points
 
 | Rule | Enforced by | Detail |
-|---|---|---|
+| --- | --- | --- |
 | Stock quantity cannot become negative | `remove_stock()` (pre-check) + DB `CHECK` (backstop) | Remove is rejected up front if `requested > available`; the DB constraint would only fire if a bug bypassed the service layer. |
 | Stock changes require positive integer quantities | `_validate_quantity()` | Rejects zero, negative, non-integer, and `bool` (since `bool` is a subclass of `int` in Python and would otherwise silently pass an `isinstance(x, int)` check). |
 | Stock operations reference valid branches | `_get_branch_or_raise()` | Looks up the branch by id before touching `Stock`; raises if it doesn't exist. |

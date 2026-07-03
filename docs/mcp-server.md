@@ -22,7 +22,7 @@ parameter on `GET /api/v1/products/{id_or_sku}` accepts directly.
 ## Tools Exposed
 
 | Tool | Input | Output | Notes |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `list_products` | none | `list[dict]` of products, or `[{"error": ...}]` | Proxies `GET /api/v1/products` on the Product API. |
 | `get_product_details` | `product_id: str` (SKU) | product `dict`, or `{"error": ...}` | Proxies `GET /api/v1/products/{sku}`. Distinguishes "not found" (API's `{"error": "not_found", ...}` body on a 404) from "API unreachable" in the error message. |
 | `get_stock_for_product` | `product_id: str` | `{"product_id", "branches": [{"branch_id", "branch_name", "quantity"}]}` | Read-only SQL join against `stock`/`branches`. Empty list (not an error) if the product has no stock anywhere. |

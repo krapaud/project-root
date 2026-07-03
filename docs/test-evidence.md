@@ -12,7 +12,7 @@ python -m pytest tests/ -v
 ```
 
 | File | Covers |
-|---|---|
+| --- | --- |
 | `test_stock_service.py` | Add/remove stock, quantity never negative, rejects zero/negative quantity, rejects unknown product (mocked Product API), rejects invalid branch, per-branch isolation. |
 | `test_user_service.py` | Admin creates common user, rejects duplicate username, soft-delete flips `is_active` without deleting the row, admin cannot be soft-deleted through user management, password change updates the hash. |
 | `test_auth.py` | Correct/incorrect credentials, unknown username, **soft-deleted user cannot authenticate**. |
@@ -20,7 +20,7 @@ python -m pytest tests/ -v
 
 Result at last run:
 
-```
+```text
 ======================== 23 passed, 1 warning in 4.51s =========================
 ```
 
@@ -31,7 +31,7 @@ Result at last run:
 Per Task 7's required scenario list:
 
 | # | Scenario | Verified by |
-|---|---|---|
+| --- | --- | --- |
 | 1 | Common user adds valid stock | `test_common_user_adds_valid_stock`, integration run step 7 |
 | 2 | Common user removes valid stock | `test_common_user_removes_valid_stock` |
 | 3 | Common user cannot remove more stock than available | `test_common_user_cannot_remove_more_stock_than_available`, `test_stock_quantity_never_goes_negative` |

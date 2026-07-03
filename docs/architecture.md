@@ -17,7 +17,7 @@ can be developed, run, and reasoned about on its own.
 ## 2. Services and Responsibilities
 
 | Service | Responsibility | Stack |
-|---|---|---|
+| --- | --- | --- |
 | `backoffice/` | Authenticated web app for admin/common users. Owns the relational DB (users, branches, stock). Enforces role-based authorization. Calls the Product API for display purposes only. | FastAPI + SQLAlchemy + Jinja2 (server-side rendering) |
 | `product_mcp_server/` | MCP server wrapping the external Product API. Exposes `list_products` / `get_product_details` tools (and stock-query tools, see §5). No DB access of its own to product data — it's a pass-through with error handling. | FastMCP |
 | `ai_service/` | Independent backend. Hosts the AI agent(s). Receives natural-language questions from the Client Web Interface, calls MCP tools, returns grounded answers. Never talks to the Backoffice DB directly. | FastAPI + Google ADK + LiteLLM + Ollama |
@@ -45,7 +45,7 @@ Backoffice DB.
 
 ## 4. Communication Between Services
 
-```
+```text
                          ┌─────────────────┐
                          │   Product API    │  (external, Docker, read-only)
                          └─────────▲────────┘

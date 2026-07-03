@@ -66,12 +66,13 @@ With a stub Product API (`prod-001`/`prod-002`/`prod-003`) and the seeded
 Backoffice DB (branches Downtown/Airport):
 
 | Question | Result |
-|---|---|
+| --- | --- |
 | "Give me details about product prod-001." | Correct name/price from the stub API. |
 | "Which branch has stock of product prod-001?" | Correctly listed both Downtown (25) and Airport (5). |
 | "What products can I find in branch 1?" | Correctly listed prod-001 (25) and prod-002 (10). |
 | "Give me details about product does-not-exist." | Explicit "no product with that identifier" — no invention. |
 | "Buy 10 of prod-001 and 5 of prod-002 — which branch(es)?" | Correctly identified Airport as the only branch holding both; one intermediate tool call had invalid arguments (passed a list instead of a string) and was retried by the agent before answering correctly. |
+| Empty question via `POST /query` | Short-circuited before reaching the agent: "Please ask a question about products or stock." |
 
 ### Re-verified against the real API's contract
 
@@ -86,11 +87,10 @@ Confirms the agent correctly consumes the real API's richer product schema
 (`sku`, `unit_price`, `currency`, `tags`, etc.) through the same
 `get_product_details` tool, with no code changes beyond the client/tool
 pointing at the real path and field names.
-| Empty question via `POST /query` | Short-circuited before reaching the agent: "Please ask a question about products or stock." |
 
 ## Endpoint
 
-```
+```text
 POST /query
 {"question": "..."}
 → {"answer": "..."}
