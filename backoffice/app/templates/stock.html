@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head><title>HBntory — Stock</title></head>
+<body>
+  <h1>Stock — Branch: {{ branch.name }}</h1>
+  <p>Logged in as {{ user.username }} (common user) — <form method="post" action="/logout" style="display:inline;"><button type="submit">Log out</button></form></p>
+
+  {% if error %}<p style="color: red;">{{ error }}</p>{% endif %}
+
+  <table border="1" cellpadding="4">
+    <tr><th>Product ID</th><th>Quantity</th></tr>
+    {% for item in stock_items %}
+    <tr><td>{{ item.product_id }}</td><td>{{ item.quantity }}</td></tr>
+    {% else %}
+    <tr><td colspan="2">No stock recorded for this branch.</td></tr>
+    {% endfor %}
+  </table>
+
+  <h2>Add stock</h2>
+  <form method="post" action="/stock/add">
+    <label>Product ID: <input type="text" name="product_id" required></label>
+    <label>Quantity: <input type="number" name="quantity" min="1" required></label>
+    <button type="submit">Add</button>
+  </form>
+
+  <h2>Remove stock</h2>
+  <form method="post" action="/stock/remove">
+    <label>Product ID: <input type="text" name="product_id" required></label>
+    <label>Quantity: <input type="number" name="quantity" min="1" required></label>
+    <button type="submit">Remove</button>
+  </form>
+</body>
+</html>
